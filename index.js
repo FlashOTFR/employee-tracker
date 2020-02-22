@@ -1,7 +1,7 @@
 const inquirer = require('inquirer');
 const mysql = require('mysql');
 const consoleTable = require('console.table');
-const util = require('util');
+
 
 const connection = mysql.createConnection({
     host: 'localhost',
@@ -18,7 +18,7 @@ const connection = mysql.createConnection({
     }
   
     console.log(`connected with id ${connection.threadId}`);
-    connection.query = util.promisify(connection.query);
+
     init();
   });
 
@@ -101,24 +101,21 @@ function updateInfo(){
             type: 'list',
             name: 'choice',
             message: 'What info would you like to update?',
-            choices: ['Departments', 'Roles', 'Employees']
+            choices: ['Employee Manager', 'Employee Role']
         }
     ]).then(data => {
         
         switch(data.choice){
-            case 'Departments':
-                departmentUpdate();
-                break;
-            case 'New Role':
+            case 'Employee Role':
                 roleUpdate();
                 break;
-            case 'New Employee':
-                employeeUpdate();
+            case 'Employee Manager':
+                managerUpdate();
                 break;
         }
     });
 };
-
+//VIEW FUNCTIONS
 function employeeView(){
     let query = 'SELECT * FROM employee';
     connection.query(query, (err, res) => {
@@ -146,26 +143,101 @@ function departmentView() {
     })
 };
 
-function roleAdd() {
 
+//ADD FUNCTIONS
+function roleAdd() {
+    inquirer.prompt(
+        {
+            type: 'input',
+            name: 'title',
+            message: 'What is the title of the new role being added?'
+        },
+        {
+            type: 'input',
+            name: 'salary',
+            message: "What is the salary for this new role?"
+        }
+    ).then(data =>{
+        console.log('Creating a new role...\n');
+  const query = connection.query(
+    'INSERT INTO emprole SET ?',
+    {
+      title: data.title,
+      salary: data.salary
+    },
+    (err, res) => {
+      if (err) throw err;
+      console.log(`${res.affectedRows} new role created!\n`);
+      console.table(res);
+     
+      init();
+    });
+
+    })
 };
 
 function departmentAdd() {
+    inquirer.prompt(
+        {
+            type: 'input',
+            name: 'name',
+            message: 'What is the name of the new deparment being added?'
+        }
+    ).then(data =>{
+        console.log('Creating a new department...\n');
+  const query = connection.query(
+    'INSERT INTO department SET ?',
+    {
+      name: data.name
+    },
+    (err, res) => {
+      if (err) throw err;
+      console.log(`${res.affectedRows} new department created!\n`);
+      console.table(res);
+     
+      init();
+    });
 
+    })
 };
 
 function employeeAdd() {
+    inquirer.prompt(
+        {
+            type: 'input',
+            name: 'fname',
+            message: 'What is the first name of the new employee being added?'
+        },
+        {
+            type: 'input',
+            name: 'lname',
+            message: "What is the last name of the new employee being added?"
+        }
+    ).then(data =>{
+        console.log('Creating a new employee entry...\n');
+  const query = connection.query(
+    'INSERT INTO employee SET ?',
+    {
+      first_name: data.fname,
+      last_name: data.lname
+    },
+    (err, res) => {
+      if (err) throw err;
+      console.log(`${res.affectedRows} new employee entry created!\n`);
+      console.table(res);
+     
+      init();
+    });
 
+    })
 };
 
+
+//UPDATE FUNCTIONS
 function roleUpdate() {
 
 };
 
-function departmentUpdate() {
-
-};
-
-function employeeUpdate() {
+function managerUpdate() {
 
 };
