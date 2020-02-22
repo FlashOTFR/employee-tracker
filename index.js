@@ -1,6 +1,7 @@
 const inquirer = require('inquirer');
 const mysql = require('mysql');
 const consoleTable = require('console.table');
+const util = require('util');
 
 const connection = mysql.createConnection({
     host: 'localhost',
@@ -17,6 +18,7 @@ const connection = mysql.createConnection({
     }
   
     console.log(`connected with id ${connection.threadId}`);
+    connection.query = util.promisify(connection.query);
     init();
   });
 
@@ -26,7 +28,7 @@ inquirer.prompt([
         type: 'list',
         name: 'choice',
         message: 'What would you like to do?',
-        choices: ['Add Info', 'View Info', 'Update Info']
+        choices: ['Add Info', 'View Info', 'Update Info', 'Quit Program']
     }
 ]).then(data => {
     
@@ -40,6 +42,8 @@ inquirer.prompt([
         case 'Update Info':
             updateInfo();
             break;
+        case 'Quit Program':
+            connection.end;
     }
 });
 };
@@ -85,7 +89,7 @@ function viewInfo(){
             case 'Roles':
                 roleView();
                 break;
-            case 'New Employee':
+            case 'Employees':
                 employeeView();
                 break;
         }
@@ -113,4 +117,55 @@ function updateInfo(){
                 break;
         }
     });
+};
+
+function employeeView(){
+    let query = 'SELECT * FROM employee';
+    connection.query(query, (err, res) => {
+        if (err) throw err;
+        console.table(res);
+        init();
+    })
+};
+
+function roleView() {
+    let query = 'SELECT * FROM emprole';
+    connection.query(query, (err, res) => {
+        if (err) throw err;
+        console.table(res);
+        init();
+    })
+};
+
+function departmentView() {
+    let query = 'SELECT * FROM department';
+    connection.query(query, (err, res) => {
+        if (err) throw err;
+        console.table(res);
+        init();
+    })
+};
+
+function roleAdd() {
+
+};
+
+function departmentAdd() {
+
+};
+
+function employeeAdd() {
+
+};
+
+function roleUpdate() {
+
+};
+
+function departmentUpdate() {
+
+};
+
+function employeeUpdate() {
+
 };
