@@ -24,7 +24,8 @@ CREATE TABLE department (
     first_name varchar(30),
     last_name varchar(30),
     role_id int,
+    department_id int,
     PRIMARY KEY(id),
-    FOREIGN KEY(role_id) REFERENCES emprole(id)
-    
+    FOREIGN KEY(role_id) REFERENCES emprole(id),
+    FOREIGN KEY(department_id) REFERENCES department(id)
  );

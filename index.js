@@ -1,31 +1,14 @@
 const inquirer = require('inquirer');
-const mysql = require('mysql');
+const connection = require('./connection.js');
 const consoleTable = require('console.table');
 
 
-const connection = mysql.createConnection({
-    host: 'localhost',
-    port: 3306,
-    user: 'root',
-    password: '5eku+aya',
-    database: 'employees'
-  });
-  
-  connection.connect(err => {
-    if (err) {
-      console.error('error connecting', err.stack);
-      return;
-    }
-  
-    console.log(`connected with id ${connection.threadId}`);
 
-    init();
-  });
 
 function init(){
-inquirer.prompt([
-    {
-        type: 'list',
+    inquirer.prompt([
+        {
+            type: 'list',
         name: 'choice',
         message: 'What would you like to do?',
         choices: ['Add Info', 'View Info', 'Update Info', 'Quit Program']
@@ -36,20 +19,20 @@ inquirer.prompt([
         case 'Add Info':
             addInfo();
             break;
-        case 'View Info':
-            viewInfo();
-            break;
-        case 'Update Info':
-            updateInfo();
-            break;
-        case 'Quit Program':
-            connection.end;
-    }
-});
-};
-
-function addInfo(){
-    inquirer.prompt([
+            case 'View Info':
+                viewInfo();
+                break;
+            case 'Update Info':
+                updateInfo();
+                break;
+                case 'Quit Program':
+                    connection.end;
+                }
+            });
+        };
+        
+        function addInfo(){
+            inquirer.prompt([
         {
             type: 'list',
             name: 'choice',
@@ -62,13 +45,13 @@ function addInfo(){
             case 'New Department':
                 departmentAdd();
                 break;
-            case 'New Role':
-                roleAdd();
-                break;
-            case 'New Employee':
+                case 'New Role':
+                    roleAdd();
+                    break;
+                    case 'New Employee':
                 employeeAdd();
                 break;
-        }
+            }
     });
 };
 
@@ -89,9 +72,9 @@ function viewInfo(){
             case 'Roles':
                 roleView();
                 break;
-            case 'Employees':
-                employeeView();
-                break;
+                case 'Employees':
+                    employeeView();
+                    break;
         }
     });
 };
@@ -109,15 +92,15 @@ function updateInfo(){
             case 'Employee Role':
                 roleUpdate();
                 break;
-            case 'Employee Manager':
-                managerUpdate();
-                break;
+                case 'Employee Manager':
+                    managerUpdate();
+                    break;
         }
     });
 };
 //VIEW FUNCTIONS
 function employeeView(){
-    let query = 'SELECT * FROM employee';
+    let query = 'SELECT * FROM employee INNER JOIN emprole ON employee.role_id = role_id INNER JOIN department ON emprole.department_id = department.id';
     connection.query(query, (err, res) => {
         if (err) throw err;
         console.table(res);
@@ -126,7 +109,7 @@ function employeeView(){
 };
 
 function roleView() {
-    let query = 'SELECT * FROM emprole';
+    let query = 'SELECT * FROM emprole INNER JOIN department ON emprole.department_id = department.id';
     connection.query(query, (err, res) => {
         if (err) throw err;
         console.table(res);
@@ -156,24 +139,33 @@ function roleAdd() {
             type: 'input',
             name: 'salary',
             message: "What is the salary for this new role?"
+        },
+        {
+            type:'list',
+            name:'department',
+            message: 'Please enter your department number. \n Legal: 1 Sales: 2 Engineering: 3 Finance: 4',
+            choices: ['1', '2', '3', '4']
         }
-    ).then(data =>{
-        console.log('Creating a new role...\n');
-  const query = connection.query(
+        ).then(data =>{
+            console.log('Creating a new role...\n');
+           
+        const query = connection.query(
     'INSERT INTO emprole SET ?',
+    // departObj[]
     {
-      title: data.title,
-      salary: data.salary
+        department_id: data.department,
+        title: data.title,
+        salary: data.salary
     },
     (err, res) => {
-      if (err) throw err;
-      console.log(`${res.affectedRows} new role created!\n`);
-      console.table(res);
-     
-      init();
-    });
+        if (err) throw err;
+        //   console.log('new role created!\n`);
+    console.table(res);
+    
+    init();
+});
 
-    })
+})
 };
 
 function departmentAdd() {
@@ -183,27 +175,27 @@ function departmentAdd() {
             name: 'name',
             message: 'What is the name of the new deparment being added?'
         }
-    ).then(data =>{
-        console.log('Creating a new department...\n');
+        ).then(data =>{
+            console.log('Creating a new department...\n');
   const query = connection.query(
-    'INSERT INTO department SET ?',
+      'INSERT INTO department SET ?',
     {
-      name: data.name
+        name: data.name
     },
     (err, res) => {
-      if (err) throw err;
-      console.log(`${res.affectedRows} new department created!\n`);
+        if (err) throw err;
+        console.log(`${res.affectedRows} new department created!\n`);
       console.table(res);
-     
+      
       init();
     });
 
-    })
+})
 };
 
 function employeeAdd() {
     inquirer.prompt(
-        {
+        [{
             type: 'input',
             name: 'fname',
             message: 'What is the first name of the new employee being added?'
@@ -212,23 +204,40 @@ function employeeAdd() {
             type: 'input',
             name: 'lname',
             message: "What is the last name of the new employee being added?"
-        }
-    ).then(data =>{
+        },
+        {
+            type: 'list',
+            name: 'department',
+            message: 'What department does this person work in?',
+            choices: ['Engineering', 'Finance', 'Legal', 'Sales']
+        },
+        {
+            type: 'list',
+            name: 'role',
+            message: 'what is the new employees role?',
+            choices:['junior dev', 'senior dev', 'junior accountant', 'senior accountant', 'junior salesperson', 'senior salesperson', 'law clerk', 'lawyer']
+        }]
+        ).then(data =>{
         console.log('Creating a new employee entry...\n');
-  const query = connection.query(
+        console.log('IDENTITY' + data.department);
+        const department_id = departObj[data.department];
+        console.log('IDENT 2', department_id);
+        const query = connection.query(
     'INSERT INTO employee SET ?',
     {
       first_name: data.fname,
-      last_name: data.lname
+      last_name: data.lname,
+      role_id: data.role,
+      department_id: data.department
     },
     (err, res) => {
-      if (err) throw err;
-      console.log(`${res.affectedRows} new employee entry created!\n`);
-      console.table(res);
-     
-      init();
+        if (err) throw err;
+        console.log(`${res.affectedRows} new employee entry created!\n`);
+        console.table(res);
+        
+        init();
     });
-
+    
     })
 };
 
@@ -241,3 +250,5 @@ function roleUpdate() {
 function managerUpdate() {
 
 };
+
+init();
