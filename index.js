@@ -129,7 +129,7 @@ function departmentView() {
 
 //ADD FUNCTIONS
 function roleAdd() {
-    inquirer.prompt(
+    inquirer.prompt([
         {
             type: 'input',
             name: 'title',
@@ -145,13 +145,12 @@ function roleAdd() {
             name:'department',
             message: 'Please enter your department number. \n Legal: 1 Sales: 2 Engineering: 3 Finance: 4',
             choices: ['1', '2', '3', '4']
-        }
+        }]
         ).then(data =>{
             console.log('Creating a new role...\n');
            
         const query = connection.query(
     'INSERT INTO emprole SET ?',
-    // departObj[]
     {
         department_id: data.department,
         title: data.title,
@@ -208,20 +207,17 @@ function employeeAdd() {
         {
             type: 'list',
             name: 'department',
-            message: 'What department does this person work in?',
-            choices: ['Engineering', 'Finance', 'Legal', 'Sales']
+            message: 'Please enter your department number. \n Engineering: 1 Finance: 2 Sales: 3 Legal: 4',
+            choices: [1, 2, 3, 4]
         },
         {
             type: 'list',
             name: 'role',
-            message: 'what is the new employees role?',
-            choices:['junior dev', 'senior dev', 'junior accountant', 'senior accountant', 'junior salesperson', 'senior salesperson', 'law clerk', 'lawyer']
+            message: 'what is the new employees role number? \n junior dev: 1 senior dev: 2 junior accountant: 5 senior accountant: 6 junior salesperson: 3 senior salesperson: 4 law clerk: 7 lawyer: 8',
+            choices:[1, 2, 3, 4, 5, 6, 7, 8]
         }]
         ).then(data =>{
         console.log('Creating a new employee entry...\n');
-        console.log('IDENTITY' + data.department);
-        const department_id = departObj[data.department];
-        console.log('IDENT 2', department_id);
         const query = connection.query(
     'INSERT INTO employee SET ?',
     {
